@@ -35,6 +35,17 @@
 
     "Resources": {
 
+        "MyServiceOffering": {
+            "Type": "ServiceOffering",
+            "Properties": {
+                "Name": "myserviceoffering",
+                "DisplayText": " 2x3MHz cpu, 8GB RAM",
+                "CpuNumber": "2",
+                "CpuSpeed": "3000",
+                "Memory": "8000"
+            }
+        },
+
         "SSHSecurityGroup": {
             "Type": "SecurityGroup",
             "Properties": {
@@ -113,7 +124,10 @@
                 "KeyName": {
                     "Fn::GetAtt": [ "MySSHKeyPair", "name" ]
                 },
-                "TemplateId": "template1"
+                "TemplateId": "template1",
+                "ServiceOfferingId": {
+                    "Fn::GetAtt": ["MyServiceOffering", "id"]
+                }
             }
         },
 
@@ -131,7 +145,10 @@
                 "KeyName": {
                     "Fn::GetAtt": [ "MySSHKeyPair", "name" ]
                 },
-                "TemplateId": "template2"
+                "TemplateId": "template2",
+                "ServiceOfferingId": {
+                    "Fn::GetAtt": ["MyServiceOffering", "id"]
+                }
             }
         },
 
@@ -149,7 +166,10 @@
                 "KeyName": {
                     "Fn::GetAtt": [ "MySSHKeyPair", "name" ]
                 },
-                "TemplateId": "template3"
+                "TemplateId": "template3",
+                "ServiceOfferingId": {
+                    "Fn::GetAtt": ["MyServiceOffering", "id"]
+                }
             }
         }
     },
