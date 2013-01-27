@@ -1,0 +1,76 @@
+{
+    "BlueprintFormatVersion": "2010-09-09",
+    "Description": "3-tier web cluster example",
+
+    "Parameters": {
+        "ZoneId": {
+            "Description": "availability zone for the virtual machine(s)",
+            "Type": "String",
+            "Default" : "ZoneA"
+        }
+    },
+
+    "Mappings": {
+        "AvailableTemplates" : {
+
+        }
+    },
+
+    "Resources": {
+
+        "MySSHKeyPair" : {
+            "Type" : "SSHKeyPair",
+            "Properties" : {
+                "Name" : "mydatabasekeypair"
+            }
+        },
+
+        "DatabaseSecurityGroup": {
+            "Type": "SecurityGroup",
+            "Properties" : {
+                "Name" : "mydatabasesecgroup"
+            }
+        },
+
+        "Database": {
+            "Type": "VirtualMachine",
+            "Properties" : {
+                "SecurityGroups" : [ { "Ref" : "DatabaseSecurityGroup" } ],
+                "KeyName" : { "Fn::GetAtt" : [ "MySSHKeyPair", "name" ]},
+                "TemplateId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+                "ServiceOfferingId": "foo"
+            }
+        },
+
+        "AppServer": {
+            "Type": "VirtualMachine",
+            "Properties" : {
+                "SecurityGroups" : [ { "Ref" : "AppServerSecurityGroup" } ],
+                "KeyName" : { "Fn::GetAtt" : [ "MySSHKeyPair", "name" ]},
+                "TemplateId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+                "ServiceOfferingId": "foo"
+            }
+        },
+
+        "LoadBalancer": {
+            "Type": "VirtualMachine",
+            "Properties" : {
+                "SecurityGroups" : [ { "Ref" : "LoadBalancerSecurityGroup" } ],
+                "KeyName" : { "Fn::GetAtt" : [ "MySSHKeyPair", "name" ]},
+                "TemplateId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
+                "ServiceOfferingId": "foo"
+            }
+        }
+    },
+
+    "Outputs" : {
+        "BlueprintInstanceId" : {
+            "Description" : "Id of deployed blueprint instance",
+            "Value" : { "Fn::GetAtt" : [ "BlueprintInstance", "InstanceId" ]}
+        },
+        "LoadBalancerInstancePublicUrl" : {
+            "Description" : "Public Url for the LoadBalancer instance",
+            "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "AppServer", "PublicDnsName" ]} ]] }
+        }
+    }
+}
