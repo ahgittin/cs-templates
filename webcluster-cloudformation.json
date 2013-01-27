@@ -175,14 +175,14 @@
     },
 
     "Outputs": {
-        "BlueprintInstanceId": {
-            "Description": "Id of deployed blueprint instance",
+        "BlueprintId": {
+            "Description": "Id of deployed blueprint",
             "Value": {
-                "Fn::GetAtt": [ "BlueprintInstance", "InstanceId" ]
+                "Fn::GetAtt": [ "Blueprint", "id" ]
             }
         },
-        "LoadBalancerInstancePublicUrl": {
-            "Description": "Public Url for the load balancer instance",
+        "LoadBalancerPublicUrl": {
+            "Description": "Public Url for the load balancer",
             "Value": {
                 "Fn::Join": ["", ["http://", {
                     "Fn::GetAtt": [ "AppServer", "PublicDnsName" ]
