@@ -6,71 +6,168 @@
         "ZoneId": {
             "Description": "availability zone for the virtual machine(s)",
             "Type": "String",
-            "Default" : "ZoneA"
+            "Default": "ZoneA"
+        },
+        "SSHKeyPairName": {
+            "Description": "name of existing key pair to use",
+            "Type": "String"
         }
     },
 
     "Mappings": {
-        "AvailableTemplates" : {
 
+        "NetworkOffering": {
+            "NetworkA": {  }
+        },
+
+        "SubnetConfig": {
+            "VPN": {
+                "CIDR": "10.0.0.0/16"
+            },
+            "Public": {
+                "CIDR": "10.0.0.0/24"
+            },
+            "Private": {
+                "CIDR": "10.0.1.0/24"
+            }
         }
     },
 
     "Resources": {
 
-        "MySSHKeyPair" : {
-            "Type" : "SSHKeyPair",
-            "Properties" : {
-                "Name" : "mydatabasekeypair"
+        "SSHSecurityGroup": {
+            "Type": "SecurityGroup",
+            "Properties": {
+                "Name": "mysshsecgroup",
+                "Description": "Enable SSH access via port 22",
+                "IngressRule": [
+                    {
+                        "Protocol": "tcp",
+                        "StartPort": "22",
+                        "EndPort": "22",
+                        "Cidr": "0.0.0.0/0"
+                    }
+                ]
             }
         },
 
-        "DatabaseSecurityGroup": {
+        "MySQLSecurityGroup": {
             "Type": "SecurityGroup",
-            "Properties" : {
-                "Name" : "mydatabasesecgroup"
+            "Properties": {
+                "Name": "mysqlsecgroup",
+                "Description": "Enable MySQL client access via port 3306",
+                "IngressRule": [
+                    {
+                        "Protocol": "tcp",
+                        "StartPort": "3306",
+                        "EndPort": "3306",
+                        "Cidr": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+
+        "WebSecurityGroup": {
+            "Type": "SecurityGroup",
+            "Properties": {
+                "Name": "websecgroup",
+                "Description": "Enable web access via port 80",
+                "IngressRule": [
+                    {
+                        "Protocol": "tcp",
+                        "StartPort": "80",
+                        "EndPort": "80",
+                        "Cidr": "0.0.0.0/0"
+                    }
+                ]
+            }
+        },
+
+        "AppSecurityGroup": {
+            "Type": "SecurityGroup",
+            "Properties": {
+                "Name": "appsecgroup",
+                "Description": "Enable access via port 8080",
+                "IngressRule": [
+                    {
+                        "Protocol": "tcp",
+                        "StartPort": "8080",
+                        "EndPort": "8080",
+                        "Cidr": "0.0.0.0/0"
+                    }
+                ]
             }
         },
 
         "Database": {
             "Type": "VirtualMachine",
-            "Properties" : {
-                "SecurityGroups" : [ { "Ref" : "DatabaseSecurityGroup" } ],
-                "KeyName" : { "Fn::GetAtt" : [ "MySSHKeyPair", "name" ]},
-                "TemplateId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
-                "ServiceOfferingId": "foo"
+            "Properties": {
+                "SecurityGroups": [
+                    {
+                        "Ref": "SSHSecurityGroup"
+                    },
+                    {
+                        "Ref": "MySQLSecurityGroup"
+                    }
+                ],
+                "KeyName": {
+                    "Fn::GetAtt": [ "MySSHKeyPair", "name" ]
+                },
+                "TemplateId": "template1"
             }
         },
 
         "AppServer": {
             "Type": "VirtualMachine",
-            "Properties" : {
-                "SecurityGroups" : [ { "Ref" : "AppServerSecurityGroup" } ],
-                "KeyName" : { "Fn::GetAtt" : [ "MySSHKeyPair", "name" ]},
-                "TemplateId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
-                "ServiceOfferingId": "foo"
+            "Properties": {
+                "SecurityGroups": [
+                    {
+                        "Ref": "AppSecurityGroup"
+                    },
+                    {
+                        "Ref": "SSHSecurityGroup"
+                    }
+                ],
+                "KeyName": {
+                    "Fn::GetAtt": [ "MySSHKeyPair", "name" ]
+                },
+                "TemplateId": "template2"
             }
         },
 
         "LoadBalancer": {
             "Type": "VirtualMachine",
-            "Properties" : {
-                "SecurityGroups" : [ { "Ref" : "LoadBalancerSecurityGroup" } ],
-                "KeyName" : { "Fn::GetAtt" : [ "MySSHKeyPair", "name" ]},
-                "TemplateId" : { "Fn::FindInMap" : [ "RegionMap", { "Ref" : "AWS::Region" }, "AMI" ]},
-                "ServiceOfferingId": "foo"
+            "Properties": {
+                "SecurityGroups": [
+                    {
+                        "Ref": "SSHSecurityGroup"
+                    },
+                    {
+                        "Ref": "WebSecurityGroup"
+                    }
+                ],
+                "KeyName": {
+                    "Fn::GetAtt": [ "MySSHKeyPair", "name" ]
+                },
+                "TemplateId": "template3"
             }
         }
     },
 
-    "Outputs" : {
-        "BlueprintInstanceId" : {
-            "Description" : "Id of deployed blueprint instance",
-            "Value" : { "Fn::GetAtt" : [ "BlueprintInstance", "InstanceId" ]}
+    "Outputs": {
+        "BlueprintInstanceId": {
+            "Description": "Id of deployed blueprint instance",
+            "Value": {
+                "Fn::GetAtt": [ "BlueprintInstance", "InstanceId" ]
+            }
         },
-        "LoadBalancerInstancePublicUrl" : {
-            "Description" : "Public Url for the LoadBalancer instance",
-            "Value" : { "Fn::Join" : ["", ["http://", { "Fn::GetAtt" : [ "AppServer", "PublicDnsName" ]} ]] }
+        "LoadBalancerInstancePublicUrl": {
+            "Description": "Public Url for the load balancer instance",
+            "Value": {
+                "Fn::Join": ["", ["http://", {
+                    "Fn::GetAtt": [ "AppServer", "PublicDnsName" ]
+                } ]]
+            }
         }
     }
 }
