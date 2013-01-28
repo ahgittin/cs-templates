@@ -3,6 +3,10 @@
     "Description": "3-tier web cluster example",
 
     "Parameters": {
+        "AccountId": {
+            "Description": "account id to be associated with this blueprint",
+            "Type": "String"
+        },
         "ZoneId": {
             "Description": "availability zone for the virtual machine(s)",
             "Type": "String",
@@ -16,12 +20,8 @@
 
     "Mappings": {
 
-        "NetworkOffering": {
-            "NetworkA": {  }
-        },
-
         "SubnetConfig": {
-            "VPN": {
+            "VPC": {
                 "CIDR": "10.0.0.0/16"
             },
             "Public": {
@@ -34,6 +34,42 @@
     },
 
     "Resources": {
+
+        "MyVpcOffering": {
+            "Type": "VPCOffering",
+            "Properties": {
+                "DisplayText": "foo",
+                "Name": "myvpcoffering",
+                "SupportedServices": {
+
+                }
+            }
+        },
+
+        "MyVpc": {
+            "Type": "VPC",
+            "Properties": {
+                "Cidr": {
+                    "Fn::FindInMap": [ "SubnetConfig", "VPC", "CIDR" ]
+                },
+                "DisplayText": "foo",
+                "Name": "myvpc",
+                "VpcOfferingId": {
+                    "Ref": "MyVpcOffering"
+                },
+                "ZoneId": {
+                    "Ref": "ZoneId"
+                }
+            }
+        },
+
+        "MyPrivateGateway": {
+            "Type": "Gateway",
+            "Properties": {
+                "Gateway": "foo"
+            }
+        },
+
 
         "MyServiceOffering": {
             "Type": "ServiceOffering",
@@ -122,11 +158,11 @@
                     }
                 ],
                 "KeyName": {
-                    "Fn::GetAtt": [ "MySSHKeyPair", "name" ]
+                    "Ref": "MySSHKeyPair"
                 },
                 "TemplateId": "template1",
                 "ServiceOfferingId": {
-                    "Fn::GetAtt": ["MyServiceOffering", "id"]
+                    "Ref": "MyServiceOffering"
                 }
             }
         },
@@ -147,7 +183,7 @@
                 },
                 "TemplateId": "template2",
                 "ServiceOfferingId": {
-                    "Fn::GetAtt": ["MyServiceOffering", "id"]
+                    "Ref": "MyServiceOffering"
                 }
             }
         },
@@ -168,7 +204,7 @@
                 },
                 "TemplateId": "template3",
                 "ServiceOfferingId": {
-                    "Fn::GetAtt": ["MyServiceOffering", "id"]
+                    "Ref": "MyServiceOffering"
                 }
             }
         }
