@@ -1,0 +1,53 @@
+<ServiceTemplate id="My3TierService" targetNamespace="http://www.example.com/3tier">
+  <TopologyTemplate ID="My3Tier">
+
+    <NodeTemplate id="LB" nodeType="cs:LoadBalancer"/>
+
+    <NodeTemplate id="MyWebApp" nodeType="my:WarFile"/>
+      <DeploymentArtifacts>
+        <DeploymentArtifact name="MyWar" type="tosca:DeploymentArtifactTypes/CSARref">
+          WARs/myapp.war
+        </DeploymentArtifact>
+      </DeploymentArtifacts>
+    </NodeTemplate>
+
+    <NodeTemplate id="MyAppServer" nodeType="cs:VirtualMachine">
+      <DeploymentArtifacts>
+         <DeploymentArtifact name="AppServerImage" type="cs:ImageRef">
+           1234-5678-9abc-def0
+         </DeploymentArtifact>
+      </DeploymentArtifacts>
+      <ImplementationArtifacts>
+        <ImplementationArtifact operationName="installApp">
+          Python/wsadmin.py
+        <ImplementationArtifact>
+     </ImplementationArtifacts>
+   </NodeTemplate>
+
+   <NodeTemplate id="MyDatabase" nodeType="cs:VirtualMachine">
+     <DeploymentArtifacts>
+       <DeploymentArtifact name="RhelImage" type="cs:ImageRef">
+         0123-4567-89ab-cdef
+       </DeploymentArtifact>
+       <DeploymentArtifact name="DbRpm" type="my:YumPackage">
+         mysql
+       </DeploymentArtifact>
+     </DeploymentArtifacts>
+   </NodeTemplate>
+
+   <RelationshipTemplate id="load_balances" relationshipType="cs:load_balances">
+     <SourceElement id="MyLB"/>
+     <TargetElement id="MyAppServer"/> 
+   </RelationshipTemplate>
+   <RelationshipTemplate id="deployed_on" relationshipType="my:deployed_on">
+     <SourceElement id="MyWar"/>
+     <TargetElement id="MyAppServer"/> 
+   </RelationshipTemplate>
+   <RelationshipTemplate id="spring_database_di" relationshipType="my:spring_database_di">
+     <SourceElement id="MyWar"/>
+     <TargetElement id="MyDatabase"/> 
+   </RelationshipTemplate>
+
+  </TopologyTemplate>
+</ServiceTemplate>
+
